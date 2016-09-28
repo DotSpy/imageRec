@@ -20,15 +20,15 @@ public class ThresholdFilter {
     public BufferedImage filter(BufferedImage img) {
         int height = img.getHeight();
         int width = img.getWidth();
-        int red, green, blue;
+        int r, g, b;
         BufferedImage finalThresholdImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
                 int color = img.getRGB(x, y);
-                red = ImageOperations.getRed(color);
-                green = ImageOperations.getGreen(color);
-                blue = ImageOperations.getBlue(color);
-                if ((red + green + blue) / 3 < requiredThresholdValue) {
+                r = ImageOperations.getRed(color);
+                g = ImageOperations.getGreen(color);
+                b = ImageOperations.getBlue(color);
+                if ((r + g + b) / 3 < requiredThresholdValue) {
                     finalThresholdImage.setRGB(x, y, ImageOperations.mixColor(0, 0, 0));
                 } else {
                     finalThresholdImage.setRGB(x, y, ImageOperations.mixColor(255, 255, 255));
