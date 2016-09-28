@@ -8,7 +8,7 @@ public class ThresholdFilter {
 
     private static ThresholdFilter instance = new ThresholdFilter();
 
-    private Integer requiredThresholdValue = 50;
+    private Integer requiredThresholdValue = 140;
 
     private ThresholdFilter() {
     }

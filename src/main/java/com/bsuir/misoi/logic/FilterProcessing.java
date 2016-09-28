@@ -2,6 +2,7 @@ package com.bsuir.misoi.logic;
 
 import com.bsuir.misoi.common.FileManipulator;
 import com.bsuir.misoi.filters.InvertFilter;
+import com.bsuir.misoi.filters.SharpenFilter;
 import com.bsuir.misoi.filters.ThresholdFilter;
 
 import java.awt.image.BufferedImage;
@@ -16,10 +17,13 @@ public class FilterProcessing {
 
     private InvertFilter invertFilter;
 
+    private SharpenFilter sharpenFilter;
+
     private FilterProcessing() {
         fileManipulator = FileManipulator.getInstance();
         thresholdFilter = ThresholdFilter.getInstance();
         invertFilter = InvertFilter.getInstance();
+        sharpenFilter = SharpenFilter.getInstance();
     }
 
     public static FilterProcessing getInstance() {
@@ -30,6 +34,7 @@ public class FilterProcessing {
         for (BufferedImage f : fileManipulator.getSourceImageFiles()) { //TODO: stream
             fileManipulator.saveImage(thresholdFilter.filter(f), "thresholdFilter");//TODO : string move
             fileManipulator.saveImage(invertFilter.filter(f), "invertFilter");
+            fileManipulator.saveImage(sharpenFilter.filter(f), "sharpenFilter");
         }
     }
 
