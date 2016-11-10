@@ -2,10 +2,7 @@ package com.bsuir.misoi.logic;
 
 import com.bsuir.misoi.common.FileManipulator;
 import com.bsuir.misoi.common.SharpenMatrix;
-import com.bsuir.misoi.filters.ConvolutionMatrix;
-import com.bsuir.misoi.filters.InvertFilter;
-import com.bsuir.misoi.filters.SharpenFilter;
-import com.bsuir.misoi.filters.ThresholdFilter;
+import com.bsuir.misoi.filters.*;
 
 import java.awt.image.BufferedImage;
 
@@ -25,6 +22,12 @@ public class FilterProcessing {
 
     private SharpenMatrix sharpenMatrix;
 
+    private LaplaceFilter laplaceFilter;
+
+    private EdgeFilter edgeFilter;
+
+    private DistanceTransform distanceTransform;
+
     private FilterProcessing() {
         fileManipulator = FileManipulator.getInstance();
         thresholdFilter = ThresholdFilter.getInstance();
@@ -32,6 +35,9 @@ public class FilterProcessing {
         sharpenFilter = SharpenFilter.getInstance();
         convolutionMatrix = ConvolutionMatrix.getInstance();
         sharpenMatrix = new SharpenMatrix();
+        laplaceFilter = new LaplaceFilter();
+        edgeFilter = new EdgeFilter();
+        distanceTransform = new DistanceTransform();
     }
 
     public static FilterProcessing getInstance() {
@@ -40,9 +46,11 @@ public class FilterProcessing {
 
     public void startFilterChain() {
         for (BufferedImage f : fileManipulator.getSourceImageFiles()) { //TODO: stream
-            fileManipulator.saveImage(thresholdFilter.filter(f), "thresholdFilter");//TODO : string move
+            fileManipulator.saveImage(thresholdFilter.filter(f, 140), "thresholdFilter");//TODO : string move
             fileManipulator.saveImage(invertFilter.filter(f), "invertFilter");
             fileManipulator.saveImage(convolutionMatrix.filter(f, sharpenMatrix), "sharpenFilter");
+            fileManipulator.saveImage(laplaceFilter.filter(f), "laplaceFilter");
+            fileManipulator.saveImage(distanceTransform.filter(thresholdFilter.filter(edgeFilter.filter(f), 140)), "edgeFilter");
         }
     }
 
