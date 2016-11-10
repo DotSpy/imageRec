@@ -37,7 +37,7 @@ public class FileManipulator {
     }
 
     private String getResourcePath() {
-        File resourcesDirectory = new File(RESOURCE_PATH + "\\source"); //TODO: move to properties file
+        File resourcesDirectory = new File(RESOURCE_PATH + "/source"); //TODO: move to properties file
         return resourcesDirectory.getAbsolutePath();
     }
 

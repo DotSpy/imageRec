@@ -8,8 +8,6 @@ public class ThresholdFilter {
 
     private static ThresholdFilter instance = new ThresholdFilter();
 
-    private Integer requiredThresholdValue = 140;
-
     private ThresholdFilter() {
     }
 
@@ -17,7 +15,7 @@ public class ThresholdFilter {
         return instance;
     }
 
-    public BufferedImage filter(BufferedImage img) {
+    public BufferedImage filter(BufferedImage img, int requiredThresholdValue) {
         int height = img.getHeight();
         int width = img.getWidth();
         int r, g, b;
@@ -36,13 +34,5 @@ public class ThresholdFilter {
             }
         }
         return finalThresholdImage;
-    }
-
-    public Integer getRequiredThresholdValue() {
-        return requiredThresholdValue;
-    }
-
-    public void setRequiredThresholdValue(Integer requiredThresholdValue) {
-        this.requiredThresholdValue = requiredThresholdValue;
     }
 }
