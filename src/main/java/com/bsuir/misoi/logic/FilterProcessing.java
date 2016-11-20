@@ -50,7 +50,8 @@ public class FilterProcessing {
             fileManipulator.saveImage(invertFilter.filter(f), "invertFilter");
             fileManipulator.saveImage(convolutionMatrix.filter(f, sharpenMatrix), "sharpenFilter");
             fileManipulator.saveImage(laplaceFilter.filter(f), "laplaceFilter");
-            fileManipulator.saveImage(distanceTransform.filter(thresholdFilter.filter(edgeFilter.filter(f), 140)), "edgeFilter");
+            fileManipulator.saveImage(thresholdFilter.filter(edgeFilter.filter(f), 140), "edgeFilter");
+            fileManipulator.saveImage(distanceTransform.filter(thresholdFilter.filter(edgeFilter.filter(f), 140)), "distanceTransformFilter");
         }
     }
 
