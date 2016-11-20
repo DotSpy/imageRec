@@ -1,60 +1,92 @@
 package com.bsuir.misoi.filters;
 
-import com.bsuir.misoi.common.ImageOperations;
-
 import java.awt.image.BufferedImage;
 
-// TODO: Заставить это работать или написать заново
 public class DistanceTransform {
 
     public BufferedImage filter(BufferedImage src) {
-        int height = src.getHeight();
-        int width = src.getWidth();
-        BufferedImage dst = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-        BufferedImage pass1 = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-        BufferedImage pass2 = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                if (src.getRGB(x, y) != ImageOperations.mixColor(0,0,0)) {
-                    pass1.setRGB(x, y, 1);
-                    pass2.setRGB(x, y, 1);
+        int w = src.getWidth();
+        int h = src.getHeight();
+        float[] dpix = src.getData().getSamples(0, 0, w, h, 0, (float[] )null);
+        final float K1 = 1;
+        final float K2 = (float)Math.sqrt(2);
+
+        for (int v = 0; v < h; v++) {
+            for (int u = 0; u < w; u++) {
+                int i = v * w + u;
+                if (dpix[i] > 0) // this is a foreground pixel
+                    dpix[i] = 0; // zero distance to foregorund
+                else
+                    dpix[i] = Float.POSITIVE_INFINITY;
+            }
+        }
+
+        for (int v = 0; v < h; v++) {
+            for (int u = 0; u < w; u++) {
+                int i = v * w + u;
+                if (dpix[i]>0) { //not a foreground pixel
+                    //compute distances via neighboring pixels
+                    float d1 = Float.POSITIVE_INFINITY;
+                    float d2 = Float.POSITIVE_INFINITY;
+                    float d3 = Float.POSITIVE_INFINITY;
+                    float d4 = Float.POSITIVE_INFINITY;
+                    if (u>0) 			d1 = K1 + dpix[v*w+u-1];
+                    if (u>0 && v>0) 	d2 = K2 + dpix[(v-1)*w+u-1];
+                    if (v>0)			d3 = K1 + dpix[(v-1)*w+u];
+                    if (v>0 && u<w-1)	d4 = K2 + dpix[(v-1)*w+u+1];
+
+                    float dmin = dpix[i];
+                    if (d1<dmin) dmin = d1;
+                    if (d2<dmin) dmin = d2;
+                    if (d3<dmin) dmin = d3;
+                    if (d4<dmin) dmin = d4;
+                    dpix[i] = dmin;
                 }
             }
         }
 
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                if (pass1.getRGB(x, y) == 1) {
-                    int a = pass1.getRGB(x - 1, y - 1) + 4;
-                    int b = pass1.getRGB(x, y -1) + 3;
-                    int c = pass1.getRGB(x + 1, y - 1) + 4;
-                    int d = pass1.getRGB(x - 1, y) + 3;
-                    int z = Math.min(Math.min(a, b), Math.min(c, d));
-                    pass1.setRGB(x, y, z);
+        for (int v = h - 1; v >= 0; v--) {
+            for (int u = w - 1; u >= 0; u--) {
+                int i = v * w + u;
+                if (dpix[i] > 0) { //not a foreground pixel
+                    //compute distances via neighboring pixels
+                    float d1 = Float.POSITIVE_INFINITY;
+                    float d2 = Float.POSITIVE_INFINITY;
+                    float d3 = Float.POSITIVE_INFINITY;
+                    float d4 = Float.POSITIVE_INFINITY;
+                    if (u<w-1) 			d1 = K1 + dpix[v*w+u+1];
+                    if (u<w-1 && v<h-1)	d2 = K2 + dpix[(v+1)*w+u+1];
+                    if (v<h-1)			d3 = K1 + dpix[(v+1)*w+u];
+                    if (v<h-1 && u>0)	d4 = K2 + dpix[(v+1)*w+u-1];
+
+                    float dmin = dpix[i];
+                    if (d1<dmin) dmin = d1;
+                    if (d2<dmin) dmin = d2;
+                    if (d3<dmin) dmin = d3;
+                    if (d4<dmin) dmin = d4;
+                    dpix[i] = dmin;
                 }
             }
         }
 
-        for (int y = height - 1; y >=0; y--) {
-            for (int x = width - 1; x >= 0; x--) {
-                if (pass2.getRGB(x, y) == 1) {
-                    int f = pass2.getRGB(x + 1, y) + 3;
-                    int g = pass2.getRGB(x - 1, y + 1) + 4;
-                    int h = pass2.getRGB(x, y + 1) + 3;
-                    int i = pass2.getRGB(x + 1, y + 1) + 4;
-                    int z = Math.min(Math.min(f, g), Math.min(h, i));
-                    pass2.setRGB(x, y, z);
-                }
-            }
+        float maxval = getRealMaxValue(dpix);
+        for (int i=0; i<dpix.length; i++){
+            if (dpix[i]>maxval)
+                dpix[i] = maxval;
         }
 
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                dst.setRGB(x, y, Math.min(pass1.getRGB(x, y), pass2.getRGB(x, y)));
-            }
-        }
+        BufferedImage dst = new BufferedImage(w, h, BufferedImage.TYPE_BYTE_GRAY);
+        dst.getRaster().setSamples(0, 0, w, h, 0, dpix);
+        return src;
+    }
 
-        return dst;
+    static float getRealMaxValue(float[] pix){
+        float maxval = Float.NEGATIVE_INFINITY;
+        for (int i = 0; i < pix.length; i++) {
+            if (pix[i] < Float.POSITIVE_INFINITY && pix[i] > maxval)
+                maxval = pix[i];
+        }
+        return maxval;
     }
 }
